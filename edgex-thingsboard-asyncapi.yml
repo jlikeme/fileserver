@@ -14,9 +14,10 @@ info:
     * `no-limit`: 表示不限定数据类型
     * `unix-time`: 表示Unix time，精确到毫秒，例如：1604902999353
     * `rfc3986-unreserved-chars`: 遵循rfc3986未保留字符规则，即：字母/数字/"-" / "." / "_" / "~"
+defaultContentType: application/json
 servers:
   production:
-    url: 'thingsboard.isimple.cloud:{port}'
+    host: 'thingsboard.isimple.cloud:{port}'
     protocol: mqtt
     description: ThingsBoard MQTT
     variables:
@@ -25,25 +26,24 @@ servers:
         enum:
           - '1883'
     security:
-      - cert: []
-defaultContentType: application/json
+      - $ref: '#/components/securitySchemes/cert'
 channels:
   v1/devices/me/attributes:
+    address: v1/devices/me/attributes
+    messages:
+      pubAttr.message:
+        $ref: '#/components/messages/pubAttr'
+      subAttr.message:
+        $ref: '#/components/messages/subAttr'
     description: |
       ### 用于网关设备属性
       * 更新网关设备的client-side属性
       * 获取网关设备的shared属性
-    publish:
-      summary: 向thingsboard更新网关设备的client-side属性
-      operationId: pubAttr
-      message:
-        $ref: '#/components/messages/pubAttr'
-    subscribe:
-      summary: 从thingsboard获取网关设备的shared属性
-      operationId: subAttr
-      message:
-        $ref: '#/components/messages/subAttr'
   'v1/devices/me/attributes/request/{requestId}':
+    address: 'v1/devices/me/attributes/request/{requestId}'
+    messages:
+      pubAttrReq.message:
+        $ref: '#/components/messages/pubAttrReq'
     description: |
       ### 用于网关请求设备属性
       * client-side属性
@@ -51,96 +51,173 @@ channels:
     parameters:
       requestId:
         $ref: '#/components/parameters/requestId'
-    publish:
-      summary: 向thingsboard请求网关设备的属性
-      operationId: pubAttrReq
-      message:
-        $ref: '#/components/messages/pubAttrReq'
   v1/devices/me/attributes/response/+:
+    address: v1/devices/me/attributes/response/+
+    messages:
+      subAttrRes.message:
+        $ref: '#/components/messages/subAttrRes'
     description: |
       ### 用于网关接收请求设备属性的回应
       * client-side属性
       * shared属性
-    subscribe:
-      summary: 从thingsboard接收请求设备属性的回应
-      operationId: subAttrRes
-      message:
-        $ref: '#/components/messages/subAttrRes'
   v1/gateway/connect:
+    address: v1/gateway/connect
+    messages:
+      pubConnect.message:
+        $ref: '#/components/messages/pubConnect'
     description: |
       ### 用于网关通知thingsboard，设备连接至该网关下
       随后设备的信息将会通过下发到该网关中
       * QoS须为0
-    publish:
-      summary: 向thingsboard通知网关所包含设备的连接
-      operationId: pubConnect
-      message:
-        $ref: '#/components/messages/pubConnect'
   v1/gateway/disconnect:
+    address: v1/gateway/disconnect
+    messages:
+      pubDisconnect.message:
+        $ref: '#/components/messages/pubDisconnect'
     description: |
       ### 用于网关通知thingsboard，设备与网关断开连接
       * QoS须为0
-    publish:
-      summary: 向thingsboard通知设备与网关断开连接
-      operationId: pubDisconnect
-      message:
-        $ref: '#/components/messages/pubDisconnect'
   v1/gateway/attributes:
+    address: v1/gateway/attributes
+    messages:
+      pubGatewayAttr.message:
+        $ref: '#/components/messages/pubGatewayAttr'
+      subGatewayAttr.message:
+        $ref: '#/components/messages/subGatewayAttr'
     description: |
       ### 用于网关下所包含设备的属性
       * 更新client-side属性
       * 获取shared属性
-    publish:
-      summary: 向thingsboard更新网关所包含设备的client-side属性
-      operationId: pubGatewayAttr
-      message:
-        $ref: '#/components/messages/pubGatewayAttr'
-    subscribe:
-      summary: 从thingsboard获取网关所包含设备的shared属性
-      operationId: subGatewayAttr
-      message:
-        $ref: '#/components/messages/subGatewayAttr'
   v1/gateway/attributes/request:
+    address: v1/gateway/attributes/request
+    messages:
+      pubGatewayAttrReq.message:
+        $ref: '#/components/messages/pubGatewayAttrReq'
     description: |
       ### 用于网关请求所包含设备的属性
       * client-side属性
       * shared属性
-    publish:
-      summary: 向thingsboard请求网关所包含设备的属性
-      operationId: pubGatewayAttrReq
-      message:
-        $ref: '#/components/messages/pubGatewayAttrReq'
   v1/gateway/attributes/response:
+    address: v1/gateway/attributes/response
+    messages:
+      subGatewayAttrRes.message:
+        $ref: '#/components/messages/subGatewayAttrRes'
     description: |
       ### 用于网关接收请求所包含设备的属性的回应
       * client-side属性
       * shared属性
-    subscribe:
-      summary: 从thingsboard接收请求所包含设备属性的回应
-      operationId: subGatewayAttrRes
-      message:
-        $ref: '#/components/messages/subGatewayAttrRes'
   v1/gateway/telemetry:
+    address: v1/gateway/telemetry
+    messages:
+      pubTelemetry.message:
+        $ref: '#/components/messages/pubTelemetry'
     description: |
       ### 用于网关上报所包含设备的数据
-    publish:
-      summary: 向thingsboard上报网关所包含设备的数据
-      operationId: pubTelemetry
-      message:
-        $ref: '#/components/messages/pubTelemetry'
   v1/gateway/rpc:
+    address: v1/gateway/rpc
+    messages:
+      pubGatewayRpc.message:
+        $ref: '#/components/messages/pubGatewayRpc'
+      subGatewayRpc.message:
+        $ref: '#/components/messages/subGatewayRpc'
     description: |
       ### 用于网关接收网关所包含设备的命令及对命令的回应
-    subscribe:
-      summary: 从thingsboard接收网关所包含设备的命令
-      operationId: subGatewayRpc
-      message:
-        $ref: '#/components/messages/subGatewayRpc'
-    publish:
-      summary: 向thingsboard发送对网关所包含设备的命令的回应
-      operationId: pubGatewayRpc
-      message:
-        $ref: '#/components/messages/pubGatewayRpc'
+operations:
+  pubAttr:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1devices~1me~1attributes'
+    summary: 向thingsboard更新网关设备的client-side属性
+    messages:
+      - $ref: '#/channels/v1~1devices~1me~1attributes/messages/pubAttr.message'
+  subAttr:
+    action: send
+    channel:
+      $ref: '#/channels/v1~1devices~1me~1attributes'
+    summary: 从thingsboard获取网关设备的shared属性
+    messages:
+      - $ref: '#/channels/v1~1devices~1me~1attributes/messages/subAttr.message'
+  pubAttrReq:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1devices~1me~1attributes~1request~1{requestId}'
+    summary: 向thingsboard请求网关设备的属性
+    messages:
+      - $ref: >-
+          #/channels/v1~1devices~1me~1attributes~1request~1{requestId}/messages/pubAttrReq.message
+  subAttrRes:
+    action: send
+    channel:
+      $ref: '#/channels/v1~1devices~1me~1attributes~1response~1+'
+    summary: 从thingsboard接收请求设备属性的回应
+    messages:
+      - $ref: >-
+          #/channels/v1~1devices~1me~1attributes~1response~1+/messages/subAttrRes.message
+  pubConnect:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1gateway~1connect'
+    summary: 向thingsboard通知网关所包含设备的连接
+    messages:
+      - $ref: '#/channels/v1~1gateway~1connect/messages/pubConnect.message'
+  pubDisconnect:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1gateway~1disconnect'
+    summary: 向thingsboard通知设备与网关断开连接
+    messages:
+      - $ref: '#/channels/v1~1gateway~1disconnect/messages/pubDisconnect.message'
+  pubGatewayAttr:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1gateway~1attributes'
+    summary: 向thingsboard更新网关所包含设备的client-side属性
+    messages:
+      - $ref: '#/channels/v1~1gateway~1attributes/messages/pubGatewayAttr.message'
+  subGatewayAttr:
+    action: send
+    channel:
+      $ref: '#/channels/v1~1gateway~1attributes'
+    summary: 从thingsboard获取网关所包含设备的shared属性
+    messages:
+      - $ref: '#/channels/v1~1gateway~1attributes/messages/subGatewayAttr.message'
+  pubGatewayAttrReq:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1gateway~1attributes~1request'
+    summary: 向thingsboard请求网关所包含设备的属性
+    messages:
+      - $ref: >-
+          #/channels/v1~1gateway~1attributes~1request/messages/pubGatewayAttrReq.message
+  subGatewayAttrRes:
+    action: send
+    channel:
+      $ref: '#/channels/v1~1gateway~1attributes~1response'
+    summary: 从thingsboard接收请求所包含设备属性的回应
+    messages:
+      - $ref: >-
+          #/channels/v1~1gateway~1attributes~1response/messages/subGatewayAttrRes.message
+  pubTelemetry:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1gateway~1telemetry'
+    summary: 向thingsboard上报网关所包含设备的数据
+    messages:
+      - $ref: '#/channels/v1~1gateway~1telemetry/messages/pubTelemetry.message'
+  pubGatewayRpc:
+    action: receive
+    channel:
+      $ref: '#/channels/v1~1gateway~1rpc'
+    summary: 向thingsboard发送对网关所包含设备的命令的回应
+    messages:
+      - $ref: '#/channels/v1~1gateway~1rpc/messages/pubGatewayRpc.message'
+  subGatewayRpc:
+    action: send
+    channel:
+      $ref: '#/channels/v1~1gateway~1rpc'
+    summary: 从thingsboard接收网关所包含设备的命令
+    messages:
+      - $ref: '#/channels/v1~1gateway~1rpc/messages/subGatewayRpc.message'
 components:
   messages:
     pubAttr:
@@ -762,6 +839,3 @@ components:
   parameters:
     requestId:
       description: 请求ID
-      schema:
-        type: integer
-        example: 1
